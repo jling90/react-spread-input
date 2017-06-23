@@ -11,6 +11,7 @@
     "space-before-function-paren": 0,
     "class-methods-use-this": [2, { "exceptMethods": ["observe"] }],
     "react/jsx-indent": [2, 4],
-    "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx"] }]
+    "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx"] }],
+    "react/no-array-index-key": 0
   }
 }

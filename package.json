@@ -1,6 +1,6 @@
 {
   "name": "react-spread-input",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",

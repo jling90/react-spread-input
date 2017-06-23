@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-class InputSpread extends Component {
+export default class Spread extends Component {
 
     static propTypes = {
         count: PropTypes.number.isRequired,
@@ -57,5 +57,3 @@ class InputSpread extends Component {
         );
     }
 }
-
-export default InputSpread;
