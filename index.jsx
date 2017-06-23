@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 class InputSpread extends Component {
+
+    static propTypes = {
+        count: PropTypes.number.isRequired,
+    }
 
     componentDidMount = () => {
         const firstField = this.rsi_0;
@@ -39,15 +44,15 @@ class InputSpread extends Component {
         this[`rsi_${index}`] = input;
     }
 
-    render = ({ count, ...props }) => {
+    render = () => {
+        const { count, ...props } = this.props;
         const { moveNext, verifyKey, declareReference } = this;
-        const digitFields = Array(count).fill().map((_, index) => (
-            <input required key={index} ref={(input) => declareReference(input, index)} maxLength="1" autoComplete="off" onKeyUp={(e) => moveNext(e, index)} onKeyDown={verifyKey} {...props} />
-        ));
 
         return (
             <div className="input-spread">
-                {digitFields}
+                {Array(count).fill().map((_, index) => (
+                    <input required key={index} ref={(input) => declareReference(input, index)} maxLength="1" autoComplete="off" onKeyUp={(e) => moveNext(e, index)} onKeyDown={verifyKey} {...props} />
+                ))}
             </div>
         );
     }
