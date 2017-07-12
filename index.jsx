@@ -30,8 +30,8 @@ export default class Spread extends Component {
     }
 
     keyDown = (e, index) => {
-        const prev = document.querySelectorAll(`input[name="field_${index - 1}"]`);
-        const current = document.querySelectorAll(`input[name="field_${index}"]`);
+        const prev = this[`rsi_${index - 1}`];
+        const current = this[`rsi_${index}`];
         const isBackspace = e.keyCode === 8;
         const hasValue = (!!current[0].value && current[0].value !== '');
 
@@ -44,8 +44,8 @@ export default class Spread extends Component {
     }
 
     keyUp = (e, index) => {
-        const current = document.querySelectorAll(`input[name="field_${index}"]`);
-        const next = document.querySelectorAll(`input[name="field_${index + 1}"]`);
+        const current = this[`rsi_${index}`];
+        const next = this[`rsi_${index + 1}`];
         const isNumeric = (e.keyCode >= 48 && e.keyCode <= 57) || (/^\d$/.test(e.key));
         const isEnter = e.keyCode === 13;
 
