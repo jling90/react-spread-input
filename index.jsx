@@ -15,29 +15,47 @@ export default class Spread extends Component {
         }
     }
 
-    verifyKey = (e) => {
-        const isAlpha = e.keyCode >= 65 && e.keyCode <= 90;
-        const isNumeric = e.keyCode >= 48 && e.keyCode <= 57;
+    parse = (e, count) => {
+        const clipboard = e.clipboardData.getData('Text') || '';
+        const limit = Math.min(clipboard.length, count);
 
-        // If key pressed was alphanumeric
-        if (!isAlpha && !isNumeric) {
-            e.preventDefault();
-            e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
+
+        const values = clipboard.substr(0, limit);
+
+        // values.split('').map((character, index) =>
+            // dispatch(change(formName, `field_${index}`, character, true)),
+        // );
+    }
+
+    keyDown = (e, index) => {
+        const prev = document.querySelectorAll(`input[name="field_${index - 1}"]`);
+        const current = document.querySelectorAll(`input[name="field_${index}"]`);
+        const isBackspace = e.keyCode === 8;
+        const hasValue = (!!current[0].value && current[0].value !== '');
+
+        if (isBackspace && !hasValue) {
+            current[0].blur();
+            if (prev.length) {
+                prev[0].focus();
+            }
         }
     }
 
-    moveNext = (e, index) => {
-        const current = this[`rsi_${index}`];
-        const next = this[`rsi_${index + 1}`];
-        const isAlpha = e.keyCode >= 65 && e.keyCode <= 90;
-        const isNumeric = e.keyCode >= 48 && e.keyCode <= 57;
+    keyUp = (e, index) => {
+        const current = document.querySelectorAll(`input[name="field_${index}"]`);
+        const next = document.querySelectorAll(`input[name="field_${index + 1}"]`);
+        const isNumeric = (e.keyCode >= 48 && e.keyCode <= 57) || (/^\d$/.test(e.key));
+        const isEnter = e.keyCode === 13;
 
         // If key pressed was alphanumeric
-        if (isAlpha || isNumeric) {
-            return next.length ? next[0].focus() : current[0].blur();
+        if (isNumeric || isEnter) {
+            current[0].blur();
+            if (next.length) {
+                next[0].focus();
+            }
         }
-
-        return true;
     }
 
     declareReference = (input, index) => {
@@ -46,12 +64,17 @@ export default class Spread extends Component {
 
     render = () => {
         const { count, ...props } = this.props;
-        const { moveNext, verifyKey, declareReference } = this;
+        const { keyUp, keyDown, paste, declareReference } = this;
+        const maxLength = 1;
+        const autoComplete = 'off';
+        const type = 'tel';
+        const required = 'required';
+        const defaults = { maxLength, autoComplete, type, required };
 
         return (
             <div className="input-spread">
                 {Array(count).fill().map((_, index) => (
-                    <input required key={index} ref={(input) => declareReference(input, index)} maxLength="1" autoComplete="off" onKeyUp={(e) => moveNext(e, index)} onKeyDown={verifyKey} {...props} />
+                    <input key={index} ref={(input) => declareReference(input, index)} onKeyUp={(e) => keyUp(e, index)} onKeyDown={(e) => keyDown(e, index)} onPaste={(e) => paste(e, count)} {...defaults} {...props} />
                 ))}
             </div>
         );
