@@ -7,6 +7,18 @@ export default class Spread extends Component {
         count: PropTypes.number.isRequired,
     }
 
+    constructor(props) {
+        super(props);
+
+        const values = [];
+
+        Array(props.count).fill().map((_, index) => (
+            values[index] = null
+        ));
+
+        this.state = { values };
+    }
+
     componentDidMount = () => {
         const firstField = this.rsi_0;
 
@@ -18,15 +30,15 @@ export default class Spread extends Component {
     parse = (e, count) => {
         const clipboard = e.clipboardData.getData('Text') || '';
         const limit = Math.min(clipboard.length, count);
+        const characters = clipboard.substr(0, limit);
+        const { values } = this.state;
 
         e.preventDefault();
         e.stopPropagation();
 
-        const values = clipboard.substr(0, limit);
-
-        // values.split('').map((character, index) =>
-            // dispatch(change(formName, `field_${index}`, character, true)),
-        // );
+        characters.split('').map((character, index) => (
+            values[index] = character
+        ));
     }
 
     keyDown = (e, index) => {
@@ -58,13 +70,21 @@ export default class Spread extends Component {
         }
     }
 
+    change = (e, index) => {
+        const { values } = this.state;
+
+        values[index] = e.target.value;
+
+        this.setState(values);
+    }
+
     declareReference = (input, index) => {
         this[`rsi_${index}`] = input;
     }
 
     render = () => {
         const { count, ...props } = this.props;
-        const { keyUp, keyDown, paste, declareReference } = this;
+        const { keyUp, keyDown, paste, change, declareReference } = this;
         const maxLength = 1;
         const autoComplete = 'off';
         const type = 'tel';
@@ -74,7 +94,17 @@ export default class Spread extends Component {
         return (
             <div className="input-spread">
                 {Array(count).fill().map((_, index) => (
-                    <input key={index} ref={(input) => declareReference(input, index)} onKeyUp={(e) => keyUp(e, index)} onKeyDown={(e) => keyDown(e, index)} onPaste={(e) => paste(e, count)} {...defaults} {...props} />
+                    <input
+                      value={this.state.values[index]}
+                      key={index}
+                      ref={(input) => declareReference(input, index)}
+                      onKeyUp={(e) => keyUp(e, index)}
+                      onKeyDown={(e) => keyDown(e, index)}
+                      onPaste={(e) => paste(e, count)}
+                      onChange={(e) => change(e, index)}
+                      {...defaults}
+                      {...props}
+                    />
                 ))}
             </div>
         );
