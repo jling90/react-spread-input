@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 export default class Spread extends Component {
 
     static propTypes = {
+        onChange: PropTypes.func.isRequired,
         count: PropTypes.number.isRequired,
     }
 
@@ -13,7 +14,7 @@ export default class Spread extends Component {
         const values = [];
 
         Array(props.count).fill().map((_, index) => (
-            values[index] = null
+            values[index] = ''
         ));
 
         this.state = { values };
@@ -22,8 +23,8 @@ export default class Spread extends Component {
     componentDidMount = () => {
         const firstField = this.rsi_0;
 
-        if (firstField.length) {
-            firstField[0].focus();
+        if (firstField) {
+            firstField.focus();
         }
     }
 
@@ -45,12 +46,12 @@ export default class Spread extends Component {
         const prev = this[`rsi_${index - 1}`];
         const current = this[`rsi_${index}`];
         const isBackspace = e.keyCode === 8;
-        const hasValue = (!!current[0].value && current[0].value !== '');
+        const hasValue = (!!current.value && current.value !== '');
 
         if (isBackspace && !hasValue) {
-            current[0].blur();
-            if (prev.length) {
-                prev[0].focus();
+            current.blur();
+            if (prev) {
+                prev.focus();
             }
         }
     }
@@ -63,19 +64,21 @@ export default class Spread extends Component {
 
         // If key pressed was alphanumeric
         if (isNumeric || isEnter) {
-            current[0].blur();
-            if (next.length) {
-                next[0].focus();
+            current.blur();
+            if (next) {
+                next.focus();
             }
         }
     }
 
-    change = (e, index) => {
+    change = (e, index, onChange) => {
         const { values } = this.state;
 
         values[index] = e.target.value;
 
         this.setState(values);
+
+        onChange(e, values.join(''));
     }
 
     declareReference = (input, index) => {
@@ -83,7 +86,7 @@ export default class Spread extends Component {
     }
 
     render = () => {
-        const { count, ...props } = this.props;
+        const { count, onChange, ...props } = this.props;
         const { keyUp, keyDown, paste, change, declareReference } = this;
         const maxLength = 1;
         const autoComplete = 'off';
@@ -101,7 +104,7 @@ export default class Spread extends Component {
                       onKeyUp={(e) => keyUp(e, index)}
                       onKeyDown={(e) => keyDown(e, index)}
                       onPaste={(e) => paste(e, count)}
-                      onChange={(e) => change(e, index)}
+                      onChange={(e) => change(e, index, onChange)}
                       {...defaults}
                       {...props}
                     />
