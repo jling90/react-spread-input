@@ -1,6 +1,6 @@
 {
   "name": "react-spread-input",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -28,6 +28,6 @@
     "react": "^15.6.1"
   },
   "scripts": {
-    "prepublish": "webpack"
+    "prepublish": "babel index.jsx --out-file index.js"
   }
 }
