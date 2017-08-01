@@ -1,3 +1,7 @@
+body {
+    text-align: center;
+}
+
 .input-spread {
     display: flex;
     justify-content: center;
