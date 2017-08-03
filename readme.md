@@ -8,11 +8,14 @@
 import ReactInputSpread from 'react-spread-input';
 
 const count = 6;
+const parentClassName = 'input-spread';
 const onChange = (value) => (
     console.log(value)  // '194191'
-)
+);
 
-const Spread = ({ onChange, count }) => (
-    <ReactInputSpread count={count} onChange={onChange} />
+const props = { count, parentClassName, onChange };
+
+const Spread = (props) => (
+    <ReactInputSpread {...props} />
 );
 ```

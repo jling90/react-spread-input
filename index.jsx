@@ -1,11 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 
 export default class Spread extends Component {
 
     static propTypes = {
+        parentClassName: PropTypes.string,
         onChange: PropTypes.func.isRequired,
         count: PropTypes.number.isRequired,
+    }
+
+    static defaultProps = {
+        parentClassName: '',
     }
 
     constructor(props) {
@@ -86,7 +92,7 @@ export default class Spread extends Component {
     }
 
     render = () => {
-        const { count, onChange, ...props } = this.props;
+        const { count, onChange, parentClassName, ...props } = this.props;
         const { keyUp, keyDown, paste, change, declareReference } = this;
         const maxLength = 1;
         const autoComplete = 'off';
@@ -95,7 +101,7 @@ export default class Spread extends Component {
         const defaults = { maxLength, autoComplete, type, required };
 
         return (
-            <div className="input-spread">
+            <div className={classnames('input-spread', parentClassName)}>
                 {Array(count).fill().map((_, index) => (
                     <input
                       value={this.state.values[index]}

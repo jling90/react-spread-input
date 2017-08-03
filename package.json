@@ -1,6 +1,6 @@
 {
   "name": "react-spread-input",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "webpack": "^3.4.0"
   },
   "dependencies": {
+    "classnames": "^2.2.5",
     "prop-types": "^15.5.10",
     "react": "^15.6.1"
   },
