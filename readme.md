@@ -19,3 +19,12 @@ const Spread = (props) => (
     <ReactInputSpread {...props} />
 );
 ```
+
+**Adding custom regex**
+
+```js
+...
+
+<ReactInputSpread regex={/^[A-Z0-9-]$/} {...props} />
+
+```

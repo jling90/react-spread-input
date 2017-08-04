@@ -6,24 +6,29 @@ export default class Spread extends Component {
 
     static propTypes = {
         className: PropTypes.string,
+        regex: PropTypes.instanceOf(RegExp),
         onChange: PropTypes.func.isRequired,
         count: PropTypes.number.isRequired,
     }
 
     static defaultProps = {
         className: '',
+        regex: /^\d$/,
     }
 
     constructor(props) {
         super(props);
 
         const values = [];
+        const classNames = [];
 
-        Array(props.count).fill().map((_, index) => (
-            values[index] = ''
-        ));
+        Array(props.count).fill().map((_, index) => {
+            values[index] = '';
+            classNames[index] = '';
+            return index;
+        });
 
-        this.state = { values };
+        this.state = { values, classNames };
     }
 
     componentDidMount = () => {
@@ -32,6 +37,12 @@ export default class Spread extends Component {
         if (firstField) {
             firstField.focus();
         }
+    }
+
+    setValue = (index, value) => {
+        const { values } = this.state;
+        values[index] = value;
+        this.setState(values);
     }
 
     parse = (e, count) => {
@@ -52,9 +63,10 @@ export default class Spread extends Component {
         const prev = this[`rsi_${index - 1}`];
         const current = this[`rsi_${index}`];
         const isBackspace = e.keyCode === 8;
-        const hasValue = (!!current.value && current.value !== '');
+        // const hasValue = (!!current.value && current.value !== '');
 
-        if (isBackspace && !hasValue) {
+        if (isBackspace) {
+            this.setValue(index, '');
             current.blur();
             if (prev) {
                 prev.focus();
@@ -63,14 +75,19 @@ export default class Spread extends Component {
     }
 
     keyUp = (e, index) => {
+        const { regex } = this.props;
         const current = this[`rsi_${index}`];
         const next = this[`rsi_${index + 1}`];
-        const isNumeric = (e.keyCode >= 48 && e.keyCode <= 57) || (/^\d$/.test(e.key));
         const isEnter = e.keyCode === 13;
 
         // If key pressed was alphanumeric
-        if (isNumeric || isEnter) {
+        if (regex.test(e.key) || isEnter) {
             current.blur();
+
+            const { classNames } = this.state;
+            classNames[index] = regex.test(e.key) ? 'success' : 'error';
+            this.setState(classNames);
+
             if (next) {
                 next.focus();
             }
@@ -78,13 +95,17 @@ export default class Spread extends Component {
     }
 
     change = (e, index, onChange) => {
-        const { values } = this.state;
+        const { regex } = this.props;
+        const { classNames, values } = this.state;
 
-        values[index] = e.target.value;
-
-        this.setState(values);
-
-        onChange(e, values.join(''));
+        // check if the input matches regex validation
+        if (regex.test(e.target.value)) {
+            this.setValue(index, e.target.value);
+            onChange(e, values.join(''));
+        } else {
+            classNames[index] = regex.test(values[index]) ? 'success' : 'error';
+            this.setState(classNames);
+        }
     }
 
     declareReference = (input, index) => {
@@ -92,7 +113,7 @@ export default class Spread extends Component {
     }
 
     render = () => {
-        const { count, onChange, className, ...props } = this.props;
+        const { count, onChange, className, regex, ...props } = this.props;
         const { keyUp, keyDown, paste, change, declareReference } = this;
         const maxLength = 1;
         const autoComplete = 'off';
@@ -105,6 +126,7 @@ export default class Spread extends Component {
                 {Array(count).fill().map((_, index) => (
                     <input
                       value={this.state.values[index]}
+                      className={this.state.classNames[index]}
                       key={index}
                       ref={(input) => declareReference(input, index)}
                       onKeyUp={(e) => keyUp(e, index)}
