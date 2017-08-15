@@ -9,24 +9,33 @@ export default class Spread extends Component {
         regex: PropTypes.instanceOf(RegExp),
         onChange: PropTypes.func.isRequired,
         count: PropTypes.number.isRequired,
+        value: PropTypes.string,
     }
 
     static defaultProps = {
         className: '',
         regex: /^\d$/,
+        value: '',
     }
 
     constructor(props) {
         super(props);
 
+        const { count, value } = props;
         const values = [];
         const classNames = [];
 
-        Array(props.count).fill().map((_, index) => {
+        Array(count).fill().forEach((_, index) => {
             values[index] = '';
             classNames[index] = '';
-            return index;
         });
+
+        if (value) {
+            value.split('').forEach((entry, index) => {
+                values[index] = entry;
+                classNames[index] = 'success';
+            });
+        }
 
         this.state = { values, classNames };
     }
@@ -54,7 +63,7 @@ export default class Spread extends Component {
         e.preventDefault();
         e.stopPropagation();
 
-        characters.split('').map((character, index) => (
+        characters.split('').forEach((character, index) => (
             values[index] = character
         ));
     }
@@ -113,7 +122,7 @@ export default class Spread extends Component {
     }
 
     render = () => {
-        const { count, onChange, className, regex, ...props } = this.props;
+        const { count, onChange, className, regex, value, ...props } = this.props;
         const { keyUp, keyDown, paste, change, declareReference } = this;
         const maxLength = 1;
         const autoComplete = 'off';
