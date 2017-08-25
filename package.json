@@ -21,6 +21,7 @@
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^5.0.1",
     "eslint-plugin-react": "^7.0.1",
+    "lodash": "^4.17.4",
     "react-dom": "^15.6.1",
     "webpack": "^3.4.0"
   },
@@ -31,6 +32,9 @@
   },
   "scripts": {
     "build": "babel index.jsx --out-file index.js",
+    "build:watch:all": "yarn build:watch; yarn build:test:watch;",
+    "build:watch": "webpack --config ./webpack.config.lib.js --watch",
+    "build:test:watch": "webpack --watch",
     "prepublish": "npm run build && webpack"
   }
 }

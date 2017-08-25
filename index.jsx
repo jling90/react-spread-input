@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import _ from 'lodash';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
@@ -10,12 +11,16 @@ export default class Spread extends Component {
         onChange: PropTypes.func.isRequired,
         count: PropTypes.number.isRequired,
         value: PropTypes.string,
+        successStyle: PropTypes.objectOf(PropTypes.string),
+        errorStyle: PropTypes.objectOf(PropTypes.string),
     }
 
     static defaultProps = {
         className: '',
         regex: /^\d$/,
         value: '',
+        successStyle: { boxShadow: '0 0 0 2px #20FC8F' },
+        errorStyle: { boxShadow: '0 0 0 2px #FF1C7C' },
     }
 
     constructor(props) {
@@ -25,7 +30,7 @@ export default class Spread extends Component {
         const values = [];
         const classNames = [];
 
-        Array(count).fill().forEach((_, index) => {
+        Array(count).fill().forEach((q, index) => {
             values[index] = '';
             classNames[index] = '';
         });
@@ -37,7 +42,7 @@ export default class Spread extends Component {
             });
         }
 
-        this.state = { values, classNames };
+        this.state = { values, classNames, keyIsDown: false };
     }
 
     componentDidMount = () => {
@@ -46,15 +51,18 @@ export default class Spread extends Component {
         if (firstField) {
             firstField.focus();
         }
+
+        this.keyDown = _.throttle(this.keyDown.bind(this), 20);
+        this.keyUp = _.throttle(this.keyUp.bind(this), 20);
     }
 
     setValue = (index, value) => {
         const { values } = this.state;
         values[index] = value;
-        this.setState(values);
+        this.setState({ values });
     }
 
-    parse = (e, count) => {
+    paste = (e, count) => {
         const clipboard = e.clipboardData.getData('Text') || '';
         const limit = Math.min(clipboard.length, count);
         const characters = clipboard.substr(0, limit);
@@ -68,34 +76,48 @@ export default class Spread extends Component {
         ));
     }
 
-    keyDown = (e, index) => {
-        const prev = this[`rsi_${index - 1}`];
-        const current = this[`rsi_${index}`];
-        const isBackspace = e.keyCode === 8;
-        // const hasValue = (!!current.value && current.value !== '');
 
-        if (isBackspace) {
+    keyDown = (key, index) => {
+        if (this.state.keyIsDown) return;
+        const { regex } = this.props;
+        if (regex.test(key)) {
             this.setValue(index, '');
-            current.blur();
-            if (prev) {
-                prev.focus();
-            }
         }
+        this.setState({ keyIsDown: true });
     }
 
-    keyUp = (e, index) => {
+    keyUp = (key, keyCode, index) => {
+        if (!this.state.keyIsDown) return;
+        this.setState({ keyIsDown: false });
+
         const { regex } = this.props;
+        const prev = this[`rsi_${index - 1}`];
         const current = this[`rsi_${index}`];
         const next = this[`rsi_${index + 1}`];
-        const isEnter = e.keyCode === 13;
+        const isEnter = keyCode === 13;
+        const isBackspace = keyCode === 8;
+        const hasValue = (!!current.value && current.value !== '');
+        const { classNames } = this.state;
+
+        if (isBackspace) {
+            if (hasValue) {
+                this.setValue(index, '');
+                classNames[index] = 'error';
+            } else {
+                current.blur();
+                if (prev) {
+                    prev.focus();
+                }
+            }
+            return;
+        }
 
         // If key pressed was alphanumeric
-        if (regex.test(e.key) || isEnter) {
+        if (regex.test(key) || isEnter) {
             current.blur();
 
-            const { classNames } = this.state;
-            classNames[index] = regex.test(e.key) ? 'success' : 'error';
-            this.setState(classNames);
+            classNames[index] = regex.test(key) ? 'success' : 'error';
+            this.setState({ classNames });
 
             if (next) {
                 next.focus();
@@ -113,7 +135,7 @@ export default class Spread extends Component {
             onChange(e, values.join(''));
         } else {
             classNames[index] = regex.test(values[index]) ? 'success' : 'error';
-            this.setState(classNames);
+            this.setState({ classNames });
         }
     }
 
@@ -122,30 +144,39 @@ export default class Spread extends Component {
     }
 
     render = () => {
-        const { count, onChange, className, regex, value, ...props } = this.props;
+        const { count, onChange, className, regex, value, successStyle, errorStyle, ...props } = this.props;
         const { keyUp, keyDown, paste, change, declareReference } = this;
         const maxLength = 1;
         const autoComplete = 'off';
-        const type = 'tel';
+        const type = 'text';
         const required = 'required';
         const defaults = { maxLength, autoComplete, type, required };
 
         return (
             <div className={classnames('input-spread', className)}>
-                {Array(count).fill().map((_, index) => (
-                    <input
-                      value={this.state.values[index]}
-                      className={this.state.classNames[index]}
-                      key={index}
-                      ref={(input) => declareReference(input, index)}
-                      onKeyUp={(e) => keyUp(e, index)}
-                      onKeyDown={(e) => keyDown(e, index)}
-                      onPaste={(e) => paste(e, count)}
-                      onChange={(e) => change(e, index, onChange)}
-                      {...defaults}
-                      {...props}
-                    />
-                ))}
+                {Array(count).fill().map((q, index) => {
+                    let styles = {};
+                    if (this.state.classNames[index] === 'success') {
+                        styles = { ...styles, ...successStyle };
+                    } else if (this.state.classNames[index] === 'error') {
+                        styles = { ...styles, ...errorStyle };
+                    }
+                    return (
+                        <input
+                          value={this.state.values[index]}
+                          className={this.state.classNames[index]}
+                          key={index}
+                          ref={(input) => declareReference(input, index)}
+                          onKeyUp={(e) => { keyUp(e.key, e.keyCode, index); }}
+                          onKeyDown={(e) => { keyDown(e.key, index); }}
+                          onPaste={(e) => paste(e, count)}
+                          onChange={(e) => change(e, index, onChange)}
+                          style={styles}
+                          {...defaults}
+                          {...props}
+                        />
+                    );
+                })}
             </div>
         );
     }
