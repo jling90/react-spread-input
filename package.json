@@ -1,6 +1,6 @@
 {
   "name": "react-spread-input",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -8,6 +8,10 @@
   },
   "author": "Hayden Bleasel <haydenbleasel@gmail.com> (http://haydenbleasel.com/)",
   "license": "MIT",
+  "dependencies": {
+    "classnames": "^2.2.5",
+    "prop-types": "^15.5.10"
+  },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",
@@ -25,10 +29,9 @@
     "react-dom": "^15.6.1",
     "webpack": "^3.4.0"
   },
-  "dependencies": {
-    "classnames": "^2.2.5",
-    "prop-types": "^15.5.10",
-    "react": "^15.6.1"
+  "peerDependencies": {
+    "react": "^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0",
+    "react-dom": "^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0"
   },
   "scripts": {
     "build": "babel index.jsx --out-file index.js",
