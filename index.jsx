@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 export default class Spread extends Component {
-
     static propTypes = {
         className: PropTypes.string,
         regex: PropTypes.instanceOf(RegExp),
@@ -13,7 +12,7 @@ export default class Spread extends Component {
         value: PropTypes.string,
         successStyle: PropTypes.objectOf(PropTypes.string),
         errorStyle: PropTypes.objectOf(PropTypes.string),
-    }
+    };
 
     static defaultProps = {
         className: '',
@@ -21,7 +20,7 @@ export default class Spread extends Component {
         value: '',
         successStyle: { boxShadow: '0 0 0 2px #20FC8F' },
         errorStyle: { boxShadow: '0 0 0 2px #FF1C7C' },
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -30,10 +29,12 @@ export default class Spread extends Component {
         const values = [];
         const classNames = [];
 
-        Array(count).fill().forEach((q, index) => {
-            values[index] = '';
-            classNames[index] = '';
-        });
+        Array(count)
+            .fill()
+            .forEach((q, index) => {
+                values[index] = '';
+                classNames[index] = '';
+            });
 
         if (value) {
             value.split('').forEach((entry, index) => {
@@ -54,13 +55,13 @@ export default class Spread extends Component {
 
         this.keyDown = _.throttle(this.keyDown.bind(this), 20);
         this.keyUp = _.throttle(this.keyUp.bind(this), 20);
-    }
+    };
 
     setValue = (index, value) => {
         const { values } = this.state;
         values[index] = value;
         this.setState({ values });
-    }
+    };
 
     paste = (e, count) => {
         const clipboard = e.clipboardData.getData('Text') || '';
@@ -71,11 +72,11 @@ export default class Spread extends Component {
         e.preventDefault();
         e.stopPropagation();
 
-        characters.split('').forEach((character, index) => (
-            values[index] = character
-        ));
-    }
-
+        characters.split('').forEach((character, index) => {
+            e.target.value = character;
+            this.change(e, index, this.props.onChange);
+        });
+    };
 
     keyDown = (key, index) => {
         if (this.state.keyIsDown) return;
@@ -84,7 +85,7 @@ export default class Spread extends Component {
             this.setValue(index, '');
         }
         this.setState({ keyIsDown: true });
-    }
+    };
 
     keyUp = (key, keyCode, index) => {
         if (!this.state.keyIsDown) return;
@@ -96,7 +97,7 @@ export default class Spread extends Component {
         const next = this[`rsi_${index + 1}`];
         const isEnter = keyCode === 13;
         const isBackspace = keyCode === 8;
-        const hasValue = (!!current.value && current.value !== '');
+        const hasValue = !!current.value && current.value !== '';
         const { classNames } = this.state;
 
         if (isBackspace) {
@@ -123,7 +124,7 @@ export default class Spread extends Component {
                 next.focus();
             }
         }
-    }
+    };
 
     change = (e, index, onChange) => {
         const { regex } = this.props;
@@ -137,14 +138,23 @@ export default class Spread extends Component {
             classNames[index] = regex.test(values[index]) ? 'success' : 'error';
             this.setState({ classNames });
         }
-    }
+    };
 
     declareReference = (input, index) => {
         this[`rsi_${index}`] = input;
-    }
+    };
 
     render = () => {
-        const { count, onChange, className, regex, value, successStyle, errorStyle, ...props } = this.props;
+        const {
+            count,
+            onChange,
+            className,
+            regex,
+            value,
+            successStyle,
+            errorStyle,
+            ...props
+        } = this.props;
         const { keyUp, keyDown, paste, change, declareReference } = this;
         const maxLength = 1;
         const autoComplete = 'off';
@@ -152,32 +162,44 @@ export default class Spread extends Component {
         const required = 'required';
         const defaults = { maxLength, autoComplete, type, required };
 
+        const { values, classNames } = this.state;
+
         return (
             <div className={classnames('input-spread', className)}>
-                {Array(count).fill().map((q, index) => {
-                    let styles = {};
-                    if (this.state.classNames[index] === 'success') {
-                        styles = { ...styles, ...successStyle };
-                    } else if (this.state.classNames[index] === 'error') {
-                        styles = { ...styles, ...errorStyle };
-                    }
-                    return (
-                        <input
-                          value={this.state.values[index]}
-                          className={this.state.classNames[index]}
-                          key={index}
-                          ref={(input) => declareReference(input, index)}
-                          onKeyUp={(e) => { keyUp(e.key, e.keyCode, index); }}
-                          onKeyDown={(e) => { keyDown(e.key, index); }}
-                          onPaste={(e) => paste(e, count)}
-                          onChange={(e) => change(e, index, onChange)}
-                          style={styles}
-                          {...defaults}
-                          {...props}
-                        />
-                    );
-                })}
+                {Array(count)
+                    .fill()
+                    .map((q, index) => {
+                        let styles = {};
+                        if (classNames[index] === 'success') {
+                            styles = { ...styles, ...successStyle };
+                        } else if (classNames[index] === 'error') {
+                            styles = { ...styles, ...errorStyle };
+                        }
+                        return (
+                            <input
+                              value={values[index]}
+                              className={classNames[index]}
+                              key={index}
+                              ref={input => declareReference(input, index)}
+                              onKeyUp={e => {
+                                  keyUp(e.key, e.keyCode, index);
+                              }}
+                              onKeyDown={e => {
+                                  keyDown(e.key, index);
+                              }}
+                              onPaste={e => {
+                                  paste(e, count);
+                              }}
+                              onChange={e => {
+                                  change(e, index, onChange);
+                              }}
+                              style={styles}
+                              {...defaults}
+                              {...props}
+                            />
+                        );
+                    })}
             </div>
         );
-    }
+    };
 }
